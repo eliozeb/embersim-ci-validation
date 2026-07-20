@@ -13,8 +13,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if (htim->Instance == 0x40000400) {
         ticks++;
         if (ticks % 10 == 0) {
-            uint8_t msg[] = "OK\n";
-            HAL_UART_Transmit(&huart2, msg, 3, 100);
+            // Test: introduce intentional UART regression
+            // uint8_t msg[] = "OK\n";
+            // HAL_UART_Transmit(&huart2, msg, 3, 100);
         }
     }
 }
