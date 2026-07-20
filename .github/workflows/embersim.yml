@@ -21,14 +21,25 @@ jobs:
       - name: Install gcc (host compiler)
         run: sudo apt-get install -y gcc
 
+      - name: Checkout EmberSim
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.EMBERSIM_REPO || 'eliozeb/embersim' }}
+          path: .embersim
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: .embersim
+
       - name: Build EmberSim CLI
-        run: cargo build -p embersim-cli --release
+        run: cargo build --manifest-path .embersim/Cargo.toml -p embersim-cli --release
 
       - name: Initialize simulation workspace
-        run: cargo run -p embersim-cli --release -- init -f ${{ env.HAL_HEADER }} -I Core/Inc -I Drivers/CMSIS/Include -o ember_sim
+        run: cargo run --manifest-path .embersim/Cargo.toml -p embersim-cli --release -- init -f ${{ vars.HAL_HEADER }} -I Core/Inc -I Drivers/CMSIS/Include -o ember_sim
 
       - name: Check project readiness
-        run: cargo run -p embersim-cli --release -- check -o ember_sim
+        run: cargo run --manifest-path .embersim/Cargo.toml -p embersim-cli --release -- check -o ember_sim
 
       - name: Run firmware regression
-        run: cargo run -p embersim-cli --release -- run -o ember_sim
+        run: cargo run --manifest-path .embersim/Cargo.toml -p embersim-cli --release -- run -o ember_sim
