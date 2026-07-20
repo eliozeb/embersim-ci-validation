@@ -8,7 +8,7 @@ EmberSim regression testing on GitHub Actions without physical hardware.
 ```
 embersim-ci-validation/
 ├── .github/workflows/embersim.yml   # Generated CI workflow
-├── .embersim/baseline/trace.jsonl   # Golden regression baseline
+├── baseline/trace.jsonl              # Golden regression baseline
 ├── embersim.toml                     # Project configuration
 ├── firmware/
 │   ├── app.c                         # TIM2 + UART application
@@ -20,15 +20,20 @@ embersim-ci-validation/
 `ember_sim/` is a generated workspace (created by `embersim init`). It is
 excluded from version control — CI regenerates it on every run.
 
+`_embersim/` is the EmberSim source checkout (CI only). It is excluded from
+version control.
+
 ## How It Works
 
 1. **Checkout** — CI checks out this repository and EmberSim (`eliozeb/embersim`)
-   into `.embersim/`.
-2. **Build** — `cargo build --manifest-path .embersim/Cargo.toml` compiles the CLI.
+   into `_embersim/`.
+2. **Build** — `cargo build --manifest-path _embersim/Cargo.toml` compiles the CLI.
 3. **Init** — `embersim init` generates the `ember_sim/` workspace from the HAL header.
 4. **Check** — `embersim check` validates HAL coverage.
-5. **Run** — `embersim run` builds firmware, executes on the simulator, and compares
-   the trace against the committed golden baseline.
+5. **Run** — `embersim run` builds firmware, executes on the simulator, and generates
+   a trace.
+6. **Compare** — `embersim compare -g baseline/trace.jsonl -c trace.jsonl` detects
+   regressions against the committed golden baseline.
 
 The same trace is produced every time — deterministic execution without hardware.
 
@@ -50,7 +55,7 @@ embersim run -o ember_sim
 embersim baseline create -t trace.jsonl
 ```
 
-This populates `.embersim/baseline/trace.jsonl`. Commit it.
+This populates `baseline/trace.jsonl`. Commit it.
 
 ### 3. Configure GitHub repository variables
 
@@ -81,12 +86,13 @@ The workflow triggers on every push and pull request to `main` or `master`.
 | Checkout repository | Checks out this firmware repo |
 | Install Rust toolchain | `dtolnay/rust-toolchain@stable` |
 | Install gcc | Host compiler for firmware |
-| Checkout EmberSim | `actions/checkout@v4` into `.embersim/` |
-| Cache Rust dependencies | `Swatinem/rust-cache@v2` scoped to `.embersim` |
-| Build EmberSim CLI | `cargo build --manifest-path .embersim/Cargo.toml` |
+| Checkout EmberSim | `actions/checkout@v4` into `_embersim/` |
+| Cache Rust dependencies | `Swatinem/rust-cache@v2` scoped to `_embersim` |
+| Build EmberSim CLI | `cargo build --manifest-path _embersim/Cargo.toml` |
 | Initialize workspace | `embersim init` generates `ember_sim/` |
 | Check project readiness | `embersim check` validates HAL coverage |
-| Run firmware regression | `embersim run` builds, executes, compares baseline |
+| Run firmware regression | `embersim run` builds and executes |
+| Compare regression baseline | `embersim compare -g baseline/trace.jsonl -c trace.jsonl` |
 
 ## Local Development
 
@@ -112,4 +118,5 @@ This repository demonstrates:
 - CI acquires EmberSim via `actions/checkout` and builds with `--manifest-path`
 - `EMBERSIM_REPO` defaults to `eliozeb/embersim` — zero configuration for the happy path
 - Deterministic trace output enables regression detection on every push
+- Baseline comparison catches firmware regressions automatically in CI
 - Zero kernel, scheduler, or peripheral changes required

@@ -25,21 +25,24 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ vars.EMBERSIM_REPO || 'eliozeb/embersim' }}
-          path: .embersim
+          path: _embersim
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: .embersim
+          workspaces: _embersim
 
       - name: Build EmberSim CLI
-        run: cargo build --manifest-path .embersim/Cargo.toml -p embersim-cli --release
+        run: cargo build --manifest-path _embersim/Cargo.toml -p embersim-cli --release
 
       - name: Initialize simulation workspace
-        run: cargo run --manifest-path .embersim/Cargo.toml -p embersim-cli --release -- init -f ${{ vars.HAL_HEADER }} -I Core/Inc -I Drivers/CMSIS/Include -o ember_sim
+        run: cargo run --manifest-path _embersim/Cargo.toml -p embersim-cli --release -- init -f ${{ vars.HAL_HEADER }} -I Core/Inc -I Drivers/CMSIS/Include -o ember_sim
 
       - name: Check project readiness
-        run: cargo run --manifest-path .embersim/Cargo.toml -p embersim-cli --release -- check -o ember_sim
+        run: cargo run --manifest-path _embersim/Cargo.toml -p embersim-cli --release -- check -o ember_sim
 
       - name: Run firmware regression
-        run: cargo run --manifest-path .embersim/Cargo.toml -p embersim-cli --release -- run -o ember_sim
+        run: cargo run --manifest-path _embersim/Cargo.toml -p embersim-cli --release -- run -o ember_sim
+
+      - name: Compare regression baseline
+        run: cargo run --manifest-path _embersim/Cargo.toml -p embersim-cli --release -- compare -g baseline/trace.jsonl -c trace.jsonl

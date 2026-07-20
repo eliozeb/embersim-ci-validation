@@ -5,8 +5,8 @@ ember_sim/
 *.o
 *.exe
 
-# Generated trace output (golden baseline lives in .embersim/baseline/)
+# Generated trace output (golden baseline is committed at baseline/trace.jsonl)
 trace.jsonl
 
-# Rust build artifacts from checked-out EmberSim (CI only)
-.embersim/target/
+# EmberSim tool checkout — CI only, never committed
+_embersim/
