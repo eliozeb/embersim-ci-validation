@@ -1,0 +1,14 @@
+[project]
+name = "embersim-project"
+description = ""
+
+[build]
+sources = []
+includes = []
+defines = []
+hal_header = ""
+
+[simulation]
+entry = "app_init"
+trace = "trace.jsonl"
+duration_ms = 1000

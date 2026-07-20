@@ -1,0 +1,12 @@
+[project]
+name = "embersim-ci-validation"
+description = "Minimal CI validation project — proves EmberSim runs on hosted runners"
+
+[build]
+sources = ["firmware/app.c", "firmware/host_main.c"]
+includes = ["firmware"]
+
+[simulation]
+entry = "app_init"
+trace = "trace.jsonl"
+duration_ms = 50
